@@ -166,6 +166,21 @@ export const createTicket = createServerFn({ method: "POST" })
       message: description,
     });
 
+    // A new report should be visible to every staff member in the notification bell.
+    // Cast only this new table until the generated Supabase types are refreshed.
+    const { error: staffNotificationError } = await (db as any)
+      .from("staff_notifications")
+      .insert({
+        ticket_id: ticket.id,
+        kind: "new_ticket",
+        title: `নতুন সমস্যা: ${ticket.ticket_number}`,
+        body: `${student.class_segment}-এর ${student.account_role === "captain" ? "ক্যাপ্টেন" : "শিক্ষার্থী"} নতুন সমস্যা জানিয়েছে: ${title}`,
+      });
+    if (staffNotificationError) {
+      console.error("Staff new-ticket notification failed", staffNotificationError);
+    }
+
+
     if (link) {
       await db.from("attachments").insert({
         ticket_id: ticket.id,
@@ -197,7 +212,7 @@ export const addStudentMessage = createServerFn({ method: "POST" })
     }
     const { data: ticket } = await db
       .from("tickets")
-      .select("id, status")
+      .select("id, status, ticket_number")
       .eq("id", data.ticketId)
       .eq("student_id", studentId)
       .maybeSingle();
@@ -208,6 +223,20 @@ export const addStudentMessage = createServerFn({ method: "POST" })
       sender_name: "Student",
       message,
     });
+
+    // A student follow-up is a separate staff notification.
+    const { error: replyNotificationError } = await (db as any)
+      .from("staff_notifications")
+      .insert({
+        ticket_id: ticket.id,
+        kind: "student_reply",
+        title: "শিক্ষার্থী নতুন বার্তা দিয়েছে",
+        body: `${ticket.ticket_number ?? "টিকিট"}-এ নতুন বার্তা এসেছে।`,
+      });
+    if (replyNotificationError) {
+      console.error("Staff student-reply notification failed", replyNotificationError);
+    }
+
     // A follow-up on a resolved ticket reopens it so staff see it again.
     const nextStatus = ticket.status === "Resolved" ? "In Progress" : ticket.status;
     if (nextStatus !== ticket.status) {

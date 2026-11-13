@@ -1,6 +1,5 @@
 import { createFileRoute, redirect, useNavigate, useRouter } from "@tanstack/react-router";
 import {
-  GraduationCap,
   Loader2,
   LifeBuoy,
   ShieldCheck,
@@ -19,7 +18,7 @@ import { Label } from "@/components/ui/label";
 import {
   NEEDS_SETUP_MESSAGE,
   getCurrentUser,
-  setupStudentAccount,
+  registerStudentAccount,
   staffLogin,
   studentLogin,
 } from "@/lib/auth.functions";
@@ -27,11 +26,11 @@ import {
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "লগইন — Cap10 Support · 10 Minute School" },
+      { title: "Cap10 Support | 10 Minute School" },
       {
         name: "description",
         content:
-          "ক্লাস ৬ থেকে এইচএসসি — অ্যাপ, ওয়েবসাইট, প্রোডাক্ট বা অভিজ্ঞতা সংক্রান্ত সমস্যা ১০ মিনিট স্কুলকে জানাও।",
+          "Cap10 Support — Report and track student support issues with 10 Minute School.",
       },
     ],
   }),
@@ -57,6 +56,8 @@ function LoginPage() {
   const [loginPassword, setLoginPassword] = useState("");
 
   // First-time setup fields (staff-imported students only — no open registration)
+  const [regName, setRegName] = useState("");
+  const [regClass, setRegClass] = useState("hsc_28");
   const [regLoginNumber, setRegLoginNumber] = useState("");
   const [regVerifier, setRegVerifier] = useState("");
   const [regPassword, setRegPassword] = useState("");
@@ -89,12 +90,11 @@ function LoginPage() {
     } catch (err) {
       const message = err instanceof Error ? err.message : "";
       if (message === NEEDS_SETUP_MESSAGE) {
-        setMode("register");
-        setRegLoginNumber(identifier);
+        setMode("login");
         setNotice(
           t(
-            "এই লগইন নম্বরের জন্য এখনো পাসওয়ার্ড সেট করা হয়নি। নিচে স্টুডেন্ট আইডি / TMS আইডি ও নতুন পাসওয়ার্ড দিয়ে প্রথমবারের সেটআপ সম্পন্ন করো।",
-            "No password is set for this login number yet. Finish first-time setup below with your Student ID / TMS ID and a new password.",
+            "এই নম্বরটি আগে থেকেই তালিকায় আছে। অ্যাকাউন্ট চালু করতে সাপোর্ট টিমের সাথে যোগাযোগ করো।",
+            "This number is already on the student list. Contact the support team to activate the account.",
           ),
         );
         setBusy(null);
@@ -129,8 +129,14 @@ function LoginPage() {
     }
     setBusy("register");
     try {
-      await setupStudentAccount({
-        data: { login_number: regLoginNumber, verifier: regVerifier, password: regPassword },
+      await registerStudentAccount({
+        data: {
+          name: regName,
+          login_number: regLoginNumber,
+          class_segment: regClass as import("@/lib/class-segments").ClassSegment,
+          transaction_id: regVerifier,
+          password: regPassword,
+        },
       });
       await router.invalidate();
       await navigate({ to: "/student", replace: true });
@@ -149,12 +155,24 @@ function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#F9FAFB] text-[#111827]">
-      <div className="border-b border-[#E5E7EB] bg-white">
+    <main className="relative isolate min-h-screen overflow-hidden bg-[#FAF9FA] text-[#111827]">
+      {/* Soft brand lighting; decorative layers never block the forms. */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+        <div className="absolute -left-48 top-24 h-[660px] w-[660px] rounded-full bg-[radial-gradient(circle,rgba(150,22,46,0.095)_0%,rgba(150,22,46,0.035)_42%,transparent_72%)] blur-2xl" />
+        <div className="absolute -right-44 top-44 h-[600px] w-[600px] rounded-full bg-[radial-gradient(circle,rgba(190,42,66,0.085)_0%,rgba(190,42,66,0.025)_45%,transparent_72%)] blur-2xl" />
+        <div className="absolute left-[25%] top-[62%] h-[420px] w-[420px] rounded-full bg-[radial-gradient(circle,rgba(118,23,46,0.045)_0%,transparent_70%)]" />
+      </div>
+      <div className="border-b border-[#E5E7EB] bg-white/90 backdrop-blur-xl">
         <div className="mx-auto flex w-full max-w-[1216px] items-center justify-between gap-3 px-4 py-4 sm:px-6">
           <div className="flex min-w-0 items-center gap-3">
-            <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-[#931212] text-white">
-              <GraduationCap className="size-6" aria-hidden="true" />
+            <span className="relative flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-[14px] bg-gradient-to-br from-[#B8243B] via-[#8F172C] to-[#430D1B] text-white shadow-[0_5px_16px_rgba(112,18,38,0.22)]" aria-label="Cap10 Support logo">
+              <svg viewBox="0 0 44 44" fill="none" className="size-9" aria-hidden="true">
+                <path d="M10 14.5L22 8l12 6.5-12 6.6L10 14.5Z" stroke="currentColor" strokeWidth="2.2" strokeLinejoin="round" />
+                <path d="M15 18.2v7.2c3.6 3.2 10.4 3.2 14 0v-7.2" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M34 15v10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                <circle cx="34" cy="27.5" r="2" fill="#FFD9DE" />
+                <path d="M13 33h18" stroke="#FFCCD4" strokeWidth="2.2" strokeLinecap="round" />
+              </svg>
             </span>
             <div className="min-w-0">
               <p className="font-display text-base font-bold sm:text-lg">
@@ -245,7 +263,7 @@ function LoginPage() {
                 color: "text-[#A23F00]",
               },
             ].map(({ icon: Icon, title, desc, tint, color }) => (
-              <div key={title} className="rounded-2xl border border-[#E5E7EB] bg-white p-4">
+              <div key={title} className="rounded-2xl border border-[#EAE3E6] bg-white/90 p-4 shadow-[0_5px_24px_rgba(70,13,30,0.035)] transition-shadow hover:shadow-[0_10px_28px_rgba(70,13,30,0.08)]">
                 <span
                   className={`mb-4 flex size-10 items-center justify-center rounded-xl ${tint} ${color}`}
                 >
@@ -269,7 +287,7 @@ function LoginPage() {
           className="order-1 lg:order-2"
           aria-label={t("লগইন ও প্রথমবারের সেটআপ", "Login and first-time setup")}
         >
-          <div className="overflow-hidden rounded-3xl border border-[#E5E7EB] bg-white shadow-[0_4px_20px_rgba(17,24,39,0.05)]">
+          <div className="overflow-hidden rounded-3xl border border-[#E9DDE1] bg-white/95 shadow-[0_18px_65px_rgba(70,13,30,0.09)] ring-1 ring-white/80 backdrop-blur-sm">
             <div className="border-b border-[#E5E7EB] px-5 py-5 sm:px-7">
               <div className="mb-5 flex items-center gap-2 text-xs font-bold text-[#0E7B4F]">
                 <CheckCircle2 className="size-4" />{" "}
@@ -296,7 +314,7 @@ function LoginPage() {
                   onClick={() => switchMode("register")}
                   className={`min-h-11 rounded-lg px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E8001D] ${mode === "register" ? "bg-white text-[#111827] shadow-sm" : "text-[#6B7280] hover:text-[#111827]"}`}
                 >
-                  {t("প্রথমবার সেটআপ", "First-time setup")}
+                  {t("রেজিস্ট্রেশন", "Register")}
                 </button>
               </div>
             </div>
@@ -380,12 +398,12 @@ function LoginPage() {
               ) : (
                 <>
                   <h2 className="font-display text-2xl font-bold">
-                    {t("প্রথমবারের সেটআপ", "First-time setup")}
+                    {t("নতুন অ্যাকাউন্ট তৈরি", "Create an account")}
                   </h2>
                   <p className="mb-6 mt-2 text-sm text-[#6B7280]">
                     {t(
-                      "তোমার তথ্য ১০ মিনিট স্কুল আগেই যুক্ত করেছে। লগইন নম্বর ও স্টুডেন্ট আইডি (অথবা TMS আইডি) দিয়ে যাচাই করে পাসওয়ার্ড সেট করো।",
-                      "10 Minute School has already added you. Verify with your login number and Student ID (or TMS ID), then choose a password.",
+                      "নাম, লগইন নম্বর, ক্লাস ও যেকোনো একটি TMS ট্রানজেকশন নম্বর দিয়ে রেজিস্ট্রেশন করো। TMS নম্বরটি তথ্য হিসেবে সংরক্ষণ করা হবে।",
+                      "Register with your name, login number, class and any one TMS transaction number. The TMS number is recorded but not verified.",
                     )}
                   </p>
                   {notice && (
@@ -397,6 +415,23 @@ function LoginPage() {
                     </p>
                   )}
                   <form onSubmit={handleRegister} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="reg-name">{t("পূর্ণ নাম", "Full Name")}</Label>
+                      <Input id="reg-name" value={regName} onChange={(e) => setRegName(e.target.value)} required minLength={2} maxLength={120} className="min-h-11" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="reg-class">{t("ক্লাস / ব্যাচ", "Class / Batch")}</Label>
+                      <select id="reg-class" value={regClass} onChange={(e) => setRegClass(e.target.value)} required className="min-h-11 w-full rounded-md border border-[#E5E7EB] bg-white px-3">
+                        <option value="class_6">Class 6</option>
+                        <option value="class_7">Class 7</option>
+                        <option value="class_8">Class 8</option>
+                        <option value="class_9">Class 9</option>
+                        <option value="ssc_27">SSC 27</option>
+                        <option value="ssc_28">SSC 28</option>
+                        <option value="hsc_27">HSC 27</option>
+                        <option value="hsc_28">HSC 28</option>
+                      </select>
+                    </div>
                     <div className="space-y-2">
                       <Label htmlFor="reg-login-number">{t("লগইন নম্বর", "Login Number")}</Label>
                       <Input
@@ -413,14 +448,14 @@ function LoginPage() {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="reg-verifier">
-                        {t("স্টুডেন্ট আইডি অথবা TMS আইডি", "Student ID or TMS ID")}
+                        {t("TMS ট্রানজেকশন নম্বর", "TMS Transaction Number")}
                       </Label>
                       <Input
                         id="reg-verifier"
                         autoComplete="off"
                         placeholder={t(
-                          "যেমন 10MS-1234 অথবা TMS12345678",
-                          "e.g. 10MS-1234 or TMS12345678",
+                          "তোমার যেকোনো একটি ট্রানজেকশন নম্বর দাও",
+                          "Enter any one of your transaction numbers",
                         )}
                         value={regVerifier}
                         onChange={(e) => setRegVerifier(e.target.value)}
@@ -430,8 +465,8 @@ function LoginPage() {
                       />
                       <p className="text-xs text-[#6B7280]">
                         {t(
-                          "না জানলে তোমার ক্লাস ক্যাপ্টেন বা সাপোর্ট টিমের সাথে যোগাযোগ করো।",
-                          "Not sure? Ask your class captain or the support team.",
+                          "এই নম্বরটি শুধু তথ্য হিসেবে সংরক্ষণ করা হবে; রেজিস্ট্রেশনে যাচাই করা হবে না।",
+                          "This number is recorded for reference and is not verified at registration.",
                         )}
                       </p>
                     </div>
@@ -481,7 +516,7 @@ function LoginPage() {
                       ) : (
                         <KeyRound className="size-4" />
                       )}
-                      {t("পাসওয়ার্ড সেট করে ঢুকে পড়ো", "Set password & continue")}
+                      {t("রেজিস্ট্রেশন সম্পন্ন করো", "Complete Registration")}
                     </Button>
                     <button
                       type="button"

@@ -95,7 +95,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "description",
         content:
-          "ক্লাস ৬ থেকে এইচএসসি — অ্যাপ, ওয়েবসাইট, প্রোডাক্ট ও অভিজ্ঞতা সংক্রান্ত সমস্যা ১০ মিনিট স্কুলকে জানানোর প্ল্যাটফর্ম।",
+          "ক্লাস ৬ থেকে এইচএসসি — অ্যাপ, ওয়েবসাইট, প্রোডাক্ট ও অভিজ্ঞতা সংক্রান্ত সমস্যা ১০ মিনিট স্কুলকে জানাওোর প্ল্যাটফর্ম।",
       },
       { name: "author", content: "10 Minute School" },
       { property: "og:title", content: "Cap10 Support — 10 Minute School" },

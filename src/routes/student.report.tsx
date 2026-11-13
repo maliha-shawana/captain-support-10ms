@@ -16,6 +16,7 @@ import { useLanguage } from "@/lib/language-context";
 import { toast } from "sonner";
 
 import { StatusBadge } from "@/components/StatusBadge";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -53,7 +54,7 @@ export const Route = createFileRoute("/student/report")({
   },
   head: () => ({
     meta: [
-      { title: "সমস্যা জানান — Cap10 Support" },
+      { title: "সমস্যা জানাও — Cap10 Support" },
       {
         name: "description",
         content: "অ্যাপ, ওয়েবসাইট, প্রোডাক্ট বা অভিজ্ঞতা সংক্রান্ত সমস্যা ১০ মিনিট স্কুলকে জানাও।",
@@ -106,6 +107,7 @@ function ReportPage() {
   const [link, setLink] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const [busy, setBusy] = useState(false);
+  const [formOpen, setFormOpen] = useState(true);
   const [done, setDone] = useState<Submitted | null>(null);
 
   function addFiles(list: FileList | null) {
@@ -251,39 +253,20 @@ function ReportPage() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl">
-      <div className="mb-6 overflow-hidden rounded-2xl border border-[#8B1E2D]/20 bg-gradient-to-br from-[#300c16] via-[#651727] to-[#942538] px-6 py-7 text-white shadow-lg sm:px-8">
-        <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-medium text-white/90">
-          <Headphones className="size-4" />
-          {t("১০ মিনিট স্কুল সাপোর্ট", "10 Minute School Support")}
-        </div>
-        <h1 className="font-display text-2xl font-bold sm:text-3xl">
-          {t("কী সমস্যা হচ্ছে?", "How can we help?")}
-        </h1>
-        <p className="mt-2 max-w-xl text-sm leading-6 text-white/80">
-          {t(
-            "অ্যাপ, ওয়েবসাইট, প্রোডাক্ট বা তোমার অভিজ্ঞতা — যা-ই হোক, বিস্তারিত জানাও। ১০ মিনিট স্কুল টিম দেখে সমাধান করবে।",
-            "App, Website, Product or your experience — tell us the details. The 10 Minute School team will review and resolve it.",
-          )}
-        </p>
-        <div className="mt-5 flex flex-wrap gap-2 text-xs text-white/85">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5">
-            <FileText className="size-3.5" />
-            {t("সমস্যা লিখো", "Describe issue")}
-          </span>
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5">
-            <Paperclip className="size-3.5" />
-            {t("প্রয়োজনে ফাইল যোগ করো", "Add files if needed")}
-          </span>
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5">
-            <Sparkles className="size-3.5" />
-            {t("টিকিট ট্র্যাক করো", "Track your ticket")}
-          </span>
-        </div>
-      </div>
+    <div className="mx-auto max-w-3xl rounded-3xl border border-border bg-background p-6 text-center shadow-sm sm:p-10">
+      <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-[#8B1E2D]/10 text-[#8B1E2D]"><Headphones className="size-7" /></div>
+      <h1 className="mt-4 font-display text-2xl font-bold">{t("সমস্যা জানাও", "Report an Issue")}</h1>
+      <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">{t("সমস্যার বিস্তারিত লিখে সাপোর্ট টিমকে জানাও।", "Tell our support team what went wrong.")}</p>
+      <Button className="mt-5 bg-[#8B1E2D] text-white hover:bg-[#a52436]" onClick={() => setFormOpen(true)}><FileText className="mr-2 size-4" />{t("নতুন সমস্যা লিখুন", "Create a new ticket")}</Button>
+      <Dialog open={formOpen} onOpenChange={setFormOpen}>
+        <DialogContent className="max-h-[92dvh] w-[min(96vw,760px)] max-w-[760px] overflow-y-auto rounded-2xl p-0">
+          <div className="sticky top-0 z-10 border-b bg-background px-6 py-5 pr-12">
+            <DialogTitle className="font-display text-xl">{t("নতুন সাপোর্ট টিকিট", "New support ticket")}</DialogTitle>
+            <DialogDescription className="mt-1">{t("সমস্যার ধরন, বিবরণ এবং প্রয়োজন হলে স্ক্রিনশট যুক্ত করুন।", "Choose a category, describe your issue, and attach screenshots if needed.")}</DialogDescription>
+          </div>
       <form
         onSubmit={handleSubmit}
-        className="card-panel space-y-6 rounded-2xl border border-border bg-background p-5 shadow-sm sm:p-7"
+        className="space-y-6 bg-background px-5 pb-6 pt-2 sm:px-7"
       >
         <div className="border-b border-border pb-4">
           <h2 className="font-display text-lg font-semibold">
@@ -489,6 +472,8 @@ function ReportPage() {
           </Button>
         </div>
       </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { Link, useNavigate, useRouter } from "@tanstack/react-router";
-import { LifeBuoy, LogOut, Menu, X } from "lucide-react";
+import { LogOut, Menu, X } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { toast } from "sonner";
 
@@ -8,6 +8,8 @@ import { logout } from "@/lib/auth.functions";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/lib/language-context";
 import { segmentLabel } from "@/lib/class-segments";
+import { TicketNotificationBell } from "@/components/TicketNotificationBell";
+import { StaffNotificationBell } from "@/components/StaffNotificationBell";
 
 export type NavItem = { to: string; label: string; icon: ReactNode; exact?: boolean };
 
@@ -96,7 +98,11 @@ export function AppShell({
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="relative isolate min-h-screen bg-background">
+      <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+        <div className="absolute -left-48 top-20 h-[650px] w-[650px] rounded-full bg-[radial-gradient(circle,rgba(150,22,46,0.065)_0%,transparent_70%)]" />
+        <div className="absolute -right-52 top-52 h-[600px] w-[600px] rounded-full bg-[radial-gradient(circle,rgba(190,42,66,0.045)_0%,transparent_70%)]" />
+      </div>
       <header className="sticky top-0 z-30 border-b border-border bg-surface/90 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-[1500px] items-center gap-3 px-4">
           <button
@@ -112,8 +118,14 @@ export function AppShell({
             to={(variant === "staff" ? "/staff" : "/student") as never}
             className="group flex items-center gap-3"
           >
-            <span className="flex size-9 items-center justify-center rounded-xl bg-gradient-brand text-brand-foreground shadow-sm transition-transform group-hover:scale-105">
-              <LifeBuoy className="size-5" />
+            <span className="relative flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-[13px] bg-gradient-to-br from-[#B8243B] via-[#8F172C] to-[#430D1B] text-white shadow-[0_5px_16px_rgba(112,18,38,0.20)] transition-transform group-hover:scale-105" aria-label="Cap10 Support logo">
+              <svg viewBox="0 0 44 44" fill="none" className="size-8" aria-hidden="true">
+                <path d="M10 14.5L22 8l12 6.5-12 6.6L10 14.5Z" stroke="currentColor" strokeWidth="2.2" strokeLinejoin="round" />
+                <path d="M15 18.2v7.2c3.6 3.2 10.4 3.2 14 0v-7.2" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M34 15v10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                <circle cx="34" cy="27.5" r="2" fill="#FFD9DE" />
+                <path d="M13 33h18" stroke="#FFCCD4" strokeWidth="2.2" strokeLinecap="round" />
+              </svg>
             </span>
             <span className="leading-tight">
               <span className="font-display block text-sm font-semibold">
@@ -123,6 +135,8 @@ export function AppShell({
             </span>
           </Link>
           <div className="ml-auto flex items-center gap-3">
+            {variant === "student" && <TicketNotificationBell />}
+            {variant === "staff" && <StaffNotificationBell />}
             <div className="hidden text-right sm:block">
               <p className="text-sm font-medium">{title}</p>
               <p className="text-xs text-muted-foreground">{translatedSubtitle}</p>

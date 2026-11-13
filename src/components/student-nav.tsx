@@ -20,7 +20,7 @@ export function buildStudentNav(isCaptain: boolean): NavItem[] {
       icon: <LayoutDashboard className="size-4" />,
       exact: true,
     },
-    { to: "/student/report", label: "সমস্যা জানান", icon: <FilePlus2 className="size-4" /> },
+    { to: "/student/report", label: "সমস্যা জানাও", icon: <FilePlus2 className="size-4" /> },
     { to: "/student/issues", label: "আমার সমস্যা", icon: <ListChecks className="size-4" /> },
     ...(isCaptain
       ? [

@@ -119,7 +119,7 @@ function StudentHome() {
           <Button asChild>
             <Link to="/student/report">
               <FilePlus2 className="size-4" />
-              {t("সমস্যা জানান", "Report an Issue")}
+              {t("সমস্যা জানাও", "Report an Issue")}
             </Link>
           </Button>
         }
@@ -216,14 +216,14 @@ function StudentHome() {
               ) : (
                 <EmptyState
                   icon={<Inbox className="size-5" />}
-                  title={t("এখনো কোনো সমস্যা জানানো হয়নি।", "No issues reported yet.")}
+                  title={t("এখনো কোনো সমস্যা জানাওো হয়নি।", "No issues reported yet.")}
                   description={t(
                     "সমস্যা জানালে তার অবস্থাসহ এখানে দেখা যাবে।",
                     "Once you report an issue, you can track its status here.",
                   )}
                   action={
                     <Button asChild size="sm">
-                      <Link to="/student/report">{t("সমস্যা জানান", "Report an Issue")}</Link>
+                      <Link to="/student/report">{t("সমস্যা জানাও", "Report an Issue")}</Link>
                     </Button>
                   }
                 />

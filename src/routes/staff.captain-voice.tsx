@@ -105,7 +105,7 @@ function CaptainVoiceDesk() {
       <PageHeader
         title={t("ক্যাপ্টেন ভয়েস", "Captain Voice")}
         description={t(
-          "ক্লাস ক্যাপ্টেনদের উন্নতির পরামর্শ, অভিজ্ঞতা ও পরিকল্পনা — পর্যালোচনা করে অবস্থা ও উত্তর জানান।",
+          "ক্লাস ক্যাপ্টেনদের উন্নতির পরামর্শ, অভিজ্ঞতা ও পরিকল্পনা — পর্যালোচনা করে অবস্থা ও উত্তর জানাও।",
           "Improvement pointers, experiences and proposals from class captains — review them and reply.",
         )}
         action={

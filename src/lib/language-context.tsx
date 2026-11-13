@@ -14,7 +14,7 @@ const LanguageContext = createContext<LanguageContextValue | null>(null);
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
   // Match the server-rendered HTML on the first client render.
-  const [language, setLanguage] = useState<Language>("bn");
+  const [language, setLanguage] = useState<Language>("en");
   const [restored, setRestored] = useState(false);
 
   useEffect(() => {

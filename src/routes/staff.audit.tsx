@@ -26,7 +26,7 @@ const EVENT_LABELS: Record<string, string> = {
   "student.logout": "শিক্ষার্থী লগআউট",
   "staff.login": "সাপোর্ট টিম লগইন",
   "staff.logout": "সাপোর্ট টিম লগআউট",
-  "ticket.created": "নতুন সমস্যা জানানো হয়েছে",
+  "ticket.created": "নতুন সমস্যা জানাওো হয়েছে",
   "ticket.message_sent": "বার্তা পাঠানো হয়েছে",
   "attachment.uploaded": "সংযুক্তি আপলোড হয়েছে",
   "ticket.status_changed": "স্ট্যাটাস পরিবর্তন হয়েছে",

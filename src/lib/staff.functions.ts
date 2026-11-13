@@ -341,8 +341,27 @@ export const staffUpdateTicket = createServerFn({ method: "POST" })
     if (typeof data.response === "string") patch.official_response = data.response.trim() || null;
     if (typeof data.handled_by === "string") patch.handled_by = data.handled_by.trim() || username;
 
+    const { data: ticketBefore } = await db.from("tickets")
+      .select("student_id, title, status").eq("id", data.id).maybeSingle();
     const { error } = await db.from("tickets").update(patch).eq("id", data.id);
     if (error) throw friendly("সমস্যাটি আপডেট করা যায়নি। আবার চেষ্টা করুন।");
+
+    if (ticketBefore && patch.status && patch.status !== ticketBefore.status) {
+      const { error: notificationError } = await db.from("ticket_notifications").insert({
+        student_id: ticketBefore.student_id, ticket_id: data.id,
+        kind: "status", title: ticketBefore.title,
+        body: `${ticketBefore.status} → ${patch.status}`,
+      });
+      if (notificationError) console.error("Status notification failed", notificationError);
+    }
+    if (ticketBefore && data.sendResponse && data.response?.trim()) {
+      const { error: notificationError } = await db.from("ticket_notifications").insert({
+        student_id: ticketBefore.student_id, ticket_id: data.id,
+        kind: "reply", title: ticketBefore.title,
+        body: "আপনার সমস্যায় সাপোর্ট টিম নতুন উত্তর দিয়েছে।",
+      });
+      if (notificationError) console.error("Reply notification failed", notificationError);
+    }
 
     if (patch.status) {
       await logAudit({
@@ -394,6 +413,9 @@ export const staffAddMessage = createServerFn({ method: "POST" })
     const { staffId, username } = await requireStaff();
     const message = (data.message ?? "").trim();
     if (message.length < 2) throw friendly("পাঠানোর আগে বার্তাটি লিখুন।");
+    const { data: ticketOwner } = !data.internal
+      ? await db.from("tickets").select("student_id, title").eq("id", data.ticketId).maybeSingle()
+      : { data: null };
     await db.from("ticket_messages").insert({
       ticket_id: data.ticketId,
       sender_type: "staff",
@@ -401,6 +423,14 @@ export const staffAddMessage = createServerFn({ method: "POST" })
       message,
       internal: Boolean(data.internal),
     });
+    if (ticketOwner) {
+      const { error: notificationError } = await db.from("ticket_notifications").insert({
+        student_id: ticketOwner.student_id, ticket_id: data.ticketId,
+        kind: "reply", title: ticketOwner.title,
+        body: "আপনার সমস্যায় সাপোর্ট টিম নতুন বার্তা দিয়েছে।",
+      });
+      if (notificationError) console.error("Message notification failed", notificationError);
+    }
     await logAudit({
       actorType: "staff",
       actorId: staffId,

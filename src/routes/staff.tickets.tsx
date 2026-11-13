@@ -468,7 +468,7 @@ function TicketWorkspace() {
           <EmptyState
             icon={<Search className="size-5" />}
             title={t(
-              "আপনার ফিল্টার অনুযায়ী কোনো সমস্যা পাওয়া যায়নি।",
+              "ফিল্টার অনুযায়ী কোনো সমস্যা পাওয়া যায়নি।",
               "No tickets match your filters.",
             )}
             description={t(
@@ -498,19 +498,16 @@ function TicketDrawer({ id, onClose }: { id: string; onClose: () => void }) {
 
   const [status, setStatus] = useState<string | null>(null);
   const [priority, setPriority] = useState<string | null>(null);
-  const [response, setResponse] = useState<string | null>(null);
   const [note, setNote] = useState("");
   const [internal, setInternal] = useState(false);
 
   const saveMutation = useMutation({
-    mutationFn: (sendResponse: boolean) =>
+    mutationFn: () =>
       update({
         data: {
           id,
           status: status ?? data?.ticket.status ?? "Open",
           priority: (priority ?? data?.ticket.priority ?? "normal") as "normal" | "high" | "urgent",
-          response: response ?? data?.ticket.official_response ?? "",
-          sendResponse,
         },
       }),
     onSuccess: () => {
@@ -521,7 +518,6 @@ function TicketDrawer({ id, onClose }: { id: string; onClose: () => void }) {
       void queryClient.invalidateQueries({ queryKey: ["staff-segment-dashboard"] });
       setPriority(null);
       setStatus(null);
-      setResponse(null);
     },
     onError: (err) =>
       toast.error(
@@ -537,8 +533,8 @@ function TicketDrawer({ id, onClose }: { id: string; onClose: () => void }) {
       setNote("");
       toast.success(
         internal
-          ? t("অভ্যন্তরীণ নোট সংরক্ষণ হয়েছে।", "Internal note saved.")
-          : t("শিক্ষার্থীকে বার্তা পাঠানো হয়েছে।", "Message sent to student."),
+          ? t("Internal note saved.", "Internal note saved.")
+          : t("Reply sent to student", "Reply sent to student."),
       );
       void queryClient.invalidateQueries({ queryKey: ["staff-ticket", id] });
     },
@@ -552,7 +548,7 @@ function TicketDrawer({ id, onClose }: { id: string; onClose: () => void }) {
     <div className="fixed inset-0 z-50 flex justify-end bg-foreground/30 backdrop-blur-sm">
       <button
         className="flex-1"
-        aria-label={t("প্যানেল বন্ধ করুন", "Close panel")}
+        aria-label={t("Close panel", "Close panel")}
         onClick={onClose}
       />
       <aside className="flex h-full w-full max-w-xl flex-col overflow-y-auto bg-surface shadow-2xl">
@@ -676,36 +672,15 @@ function TicketDrawer({ id, onClose }: { id: string; onClose: () => void }) {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-1.5">
-                <Label>{t("অফিশিয়াল উত্তর", "Official response to student")}</Label>
-                <Textarea
-                  rows={4}
-                  value={response ?? data.ticket.official_response ?? ""}
-                  onChange={(e) => setResponse(e.target.value)}
-                  placeholder={t("Write an official response...", "Write an official response...")}
-                />
-              </div>
               <div className="flex flex-wrap gap-2">
                 <Button
                   size="sm"
                   variant="outline"
                   disabled={saveMutation.isPending}
-                  onClick={() => saveMutation.mutate(false)}
+                  onClick={() => saveMutation.mutate()}
                 >
-                  <Save className="size-4" />
-                  {t("সেভ", "Save")}
-                </Button>
-                <Button
-                  size="sm"
-                  disabled={saveMutation.isPending}
-                  onClick={() => saveMutation.mutate(true)}
-                >
-                  {saveMutation.isPending ? (
-                    <Loader2 className="size-4 animate-spin" />
-                  ) : (
-                    <Send className="size-4" />
-                  )}
-                  {t("Save and send response", "Save and send response")}
+                  {saveMutation.isPending ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
+                  {t("স্ট্যাটাস ও প্রায়োরিটি সেভ করো", "Save status and priority")}
                 </Button>
               </div>
             </div>
@@ -753,7 +728,7 @@ function TicketDrawer({ id, onClose }: { id: string; onClose: () => void }) {
                   ))
                 ) : (
                   <p className="text-sm text-muted-foreground">
-                    {t("এখনো কোনো বার্তা নেই।", "No messages yet.")}
+                    {t("No messages yet.", "No messages yet.")}
                   </p>
                 )}
               </div>
@@ -763,7 +738,7 @@ function TicketDrawer({ id, onClose }: { id: string; onClose: () => void }) {
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
                 placeholder={t(
-                  "একটি বার্তা বা অভ্যন্তরীণ নোট লিখুন...",
+                  "উত্তর লেখো। ...",
                   "Write a message or internal note...",
                 )}
               />
@@ -774,7 +749,7 @@ function TicketDrawer({ id, onClose }: { id: string; onClose: () => void }) {
                     checked={internal}
                     onChange={(e) => setInternal(e.target.checked)}
                   />
-                  {t("নোট", "Internal note")}
+                  {t("নোট", "Staff-only note")}
                 </label>
                 <Button
                   size="sm"
@@ -786,7 +761,7 @@ function TicketDrawer({ id, onClose }: { id: string; onClose: () => void }) {
                   ) : (
                     <Send className="size-4" />
                   )}
-                  {t("Send", "Send")}
+                  {internal ? t("নোট সংরক্ষণ করো", "Save note") : t("উত্তর পাঠাও", "Send reply")}
                 </Button>
               </div>
             </div>

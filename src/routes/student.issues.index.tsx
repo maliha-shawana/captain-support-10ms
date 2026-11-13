@@ -93,7 +93,7 @@ function MyIssues() {
           <Button asChild>
             <Link to="/student/report">
               <FilePlus2 className="size-4" />
-              {t("সমস্যা জানান", "Report an Issue")}
+              {t("সমস্যা জানাও", "Report an Issue")}
             </Link>
           </Button>
         }
@@ -183,7 +183,7 @@ function MyIssues() {
                     "তোমার খোঁজার সাথে মিলে এমন কোনো সমস্যা পাওয়া যায়নি।",
                     "No tickets match your search.",
                   )
-                : t("এখনো কোনো সমস্যা জানানো হয়নি।", "You haven't reported any issues yet.")
+                : t("এখনো কোনো সমস্যা জানাওো হয়নি।", "You haven't reported any issues yet.")
             }
             description={
               search.trim()

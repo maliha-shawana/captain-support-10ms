@@ -166,6 +166,64 @@ export const setupStudentAccount = createServerFn({ method: "POST" })
     };
   });
 
+
+// Open registration: transaction ID is recorded, not verified.
+// Existing accounts are never claimed or reset through this endpoint.
+export const registerStudentAccount = createServerFn({ method: "POST" })
+  .inputValidator((input: {
+    name: string;
+    login_number: string;
+    class_segment: ClassSegment;
+    transaction_id: string;
+    password: string;
+  }) => input)
+  .handler(async ({ data }) => {
+    const name = (data.name ?? "").trim();
+    const login_number = normalizeLoginNumber(data.login_number ?? "");
+    const transaction_id = (data.transaction_id ?? "").trim();
+    const password = data.password ?? "";
+    const segments: ClassSegment[] = ["class_6", "class_7", "class_8", "class_9", "ssc_27", "ssc_28", "hsc_27", "hsc_28"];
+
+    if (name.length < 2 || name.length > 120) throw friendly("সঠিক নাম দিন।");
+    if (!/^01\d{9}$/.test(login_number)) throw friendly("১১ সংখ্যার সঠিক লগইন নম্বর দিন।");
+    if (!segments.includes(data.class_segment)) throw friendly("সঠিক ক্লাস / ব্যাচ নির্বাচন করুন।");
+    if (!transaction_id || transaction_id.length > 100) throw friendly("যেকোনো একটি TMS ট্রানজেকশন নম্বর দিন।");
+    if (password.length < MIN_PASSWORD_LENGTH) throw friendly(`পাসওয়ার্ড কমপক্ষে ${MIN_PASSWORD_LENGTH} অক্ষরের হতে হবে।`);
+
+    const rateLimitKey = `register:${login_number}`;
+    assertLoginNotRateLimited(rateLimitKey);
+    const { data: existing, error: lookupError } = await db.from("students")
+      .select("id").eq("login_number", login_number).maybeSingle();
+    if (lookupError) throw friendly("ডাটাবেজে সংযোগ করা যায়নি। আবার চেষ্টা করুন।");
+    if (existing) throw friendly("এই লগইন নম্বরে অ্যাকাউন্ট আছে। লগইন করুন অথবা সাপোর্টে যোগাযোগ করুন।");
+
+    const password_hash = await hashPassword(password);
+    const { data: created, error } = await db.from("students")
+      .insert({
+        name,
+        login_number,
+        contact_number: login_number,
+        class_segment: data.class_segment,
+        account_role: "student",
+        status: "active",
+        tms_transaction_ids: [transaction_id],
+        password_hash,
+        last_login_at: new Date().toISOString(),
+      })
+      .select("id, name")
+      .single();
+    if (error || !created) {
+      if (error?.code === "23505") throw friendly("এই লগইন নম্বরে ইতিমধ্যে অ্যাকাউন্ট আছে।");
+      throw friendly("রেজিস্ট্রেশন সম্পন্ন হয়নি। আবার চেষ্টা করুন।");
+    }
+    clearLoginAttempts(rateLimitKey);
+    const session = await getSupportSession();
+    await session.update({ role: "student", studentId: created.id });
+    await logAudit({ actorType: "student", actorId: created.id, actorName: created.name,
+      eventType: "student.account_setup", targetType: "student", targetId: created.id });
+    return { name: created.name, account_role: "student" as const };
+  });
+
 export const studentLogin = createServerFn({ method: "POST" })
   .inputValidator((input: { login_number: string; password: string }) => input)
   .handler(async ({ data }) => {

@@ -8,6 +8,12 @@ export type Database = {
   };
   public: {
     Tables: {
+      ticket_notifications: {
+        Row: { id: string; student_id: string; ticket_id: string; kind: string; title: string; body: string; is_read: boolean; created_at: string };
+        Insert: { id?: string; student_id: string; ticket_id: string; kind: string; title: string; body?: string; is_read?: boolean; created_at?: string };
+        Update: { id?: string; student_id?: string; ticket_id?: string; kind?: string; title?: string; body?: string; is_read?: boolean; created_at?: string };
+        Relationships: [];
+      };
       app_settings: {
         Row: {
           key: string;
